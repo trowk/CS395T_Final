@@ -1,0 +1,56 @@
+---
+title: "CS395T Final"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+```{r}
+df <- rbind((tibble(read.csv("cifar10_results.csv")) %>%
+             add_column(dataset="cifar10")),
+            (tibble(read.csv("results.csv")) %>%
+             add_column(dataset="stl10"))) %>% 
+      mutate(ModelType = case_when(BatchSize==64 ~ ModelType,
+                                  BatchSize==32 ~ paste(ModelType, "2Block", sep=""))) %>%
+      mutate(BatchSize=factor(BatchSize),
+             ModelType=factor(ModelType),
+             dataset=factor(dataset))
+df
+```
+
+```{r}
+ggplot(df %>% filter(dataset=="cifar10"), aes(x=Epoch, y=ValidationAccuracy, color=ModelType)) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 3), se = FALSE) +
+  theme_minimal() +
+  ggtitle("Validation Accuracy on CIFAR-10 Dataset") +
+  xlab("Epochs") +
+  scale_y_continuous(
+    name = "Validation Accuracy",
+    limits = c(0, 1)
+  ) +
+  scale_color_discrete('Models', labels=c('Alternating',
+                               '2-Block Alternating',
+                               'Joint',
+                               '2-Block Joint',
+                               'Resnet18',
+                               'VIT'))
+
+ggplot(df %>% filter(dataset=="stl10"), aes(x=Epoch, y=ValidationAccuracy, color=ModelType)) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 3), se = FALSE) +
+  theme_minimal() +
+  ggtitle("Validation Accuracy on STL-10 Dataset") +
+  xlab("Epochs") +
+  scale_y_continuous(
+    name = "Validation Accuracy",
+    limits = c(0, 1)
+  ) +
+  scale_color_discrete('Models', labels=c('Alternating',
+                               '2-Block Alternating',
+                               'Joint',
+                               '2-Block Joint',
+                               'Resnet18',
+                               'VIT'))
+```
