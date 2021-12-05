@@ -1,3 +1,6 @@
 # CS395T_Final - Sai Kiran Maddela, Ian Trowbridge
 
-Our experiments can be found in the ``experiments.ipynb`` notebook. This is where we have also included the results we obtained as well as individual graphs. The model architectures that we used can also be found here.
+The repo contains the code and experimental results for our final project on Mixture Models.
+
+All of the required code for our experiments are found in the ``./Code`` directory. There, you will find the files that contain the different Mixture Model architectures as well as the training code. 
+
