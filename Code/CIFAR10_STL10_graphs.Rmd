@@ -1,0 +1,96 @@
+---
+title: "CS395T Final"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+```{r}
+df <- rbind((tibble(read.csv("cifar10_results.csv")) %>%
+             add_column(dataset="cifar10")),
+            (tibble(read.csv("stl10_results.csv")) %>%
+             add_column(dataset="stl10")),
+            (tibble(read.csv("CIFAR100_results.csv")) %>%
+             add_column(dataset="cifar100"))) %>% 
+      mutate(ModelType = case_when(BatchSize==64 ~ ModelType,
+                                  BatchSize==32 ~ paste(ModelType, "2Block", sep=""))) %>%
+      mutate(BatchSize=factor(BatchSize),
+             ModelType=factor(ModelType),
+             dataset=factor(dataset))
+df
+```
+
+```{r}
+ggplot(df %>% filter(dataset=="cifar10"), aes(x=Epoch, y=ValidationAccuracy, color=ModelType)) +
+  geom_line() +
+  theme_minimal() +
+  ggtitle("Validation Accuracy on CIFAR-10 Dataset") +
+  xlab("Epochs") +
+  scale_y_continuous(
+    name = "Validation Accuracy",
+    limits = c(0, 0.8)
+  ) +
+  scale_color_discrete('Models', labels=c('Alternating',
+                               '2-Block Alternating',
+                               'Joint',
+                               '2-Block Joint',
+                               'Resnet18',
+                               'VIT'))
+
+ggplot(df %>% filter(dataset=="stl10"), aes(x=Epoch, y=ValidationAccuracy, color=ModelType)) +
+  geom_line() +
+  theme_minimal() +
+  ggtitle("Validation Accuracy on STL-10 Dataset") +
+  xlab("Epochs") +
+  scale_y_continuous(
+    name = "Validation Accuracy",
+    limits = c(0, 0.8)
+  ) +
+  scale_color_discrete('Models', labels=c('Alternating',
+                               '2-Block Alternating',
+                               'Joint',
+                               '2-Block Joint',
+                               'Resnet18',
+                               'VIT'))
+
+ggplot(df %>% filter(dataset=="cifar100"), aes(x=Epoch, y=ValidationAccuracy, color=ModelType)) +
+  geom_line() +
+  theme_minimal() +
+  ggtitle("Validation Accuracy on CIFAR-100 Dataset") +
+  xlab("Epochs") +
+  scale_y_continuous(
+    name = "Validation Accuracy",
+    limits = c(0, 0.8)
+  ) +
+  scale_color_discrete('Models', labels=c('Alternating',
+                               'Joint',
+                               'Resnet18',
+                               'VIT'))
+```
+
+```{r}
+times_df <- df %>% 
+  filter(TrainTime < 1000) %>%
+  group_by(dataset, ModelType) %>%
+  summarise(mean_time=mean(TrainTime))
+
+df %>%
+  group_by(dataset, ModelType) %>%
+  summarise(NumParameters = mean(NumParameters))
+
+ggplot(times_df, aes(x=dataset, y=mean_time, fill=ModelType)) +
+  geom_col(position = position_dodge(), color='black') +
+  theme_minimal()  +
+  ggtitle("Training Time per Epoch") +
+  xlab("Datsets") +
+  ylab("Mean Training per Epoch in Seconds")  +
+  scale_fill_discrete('Models', labels=c('Alternating',
+                               '2-Block Alternating',
+                               'Joint',
+                               '2-Block Joint',
+                               'Resnet18',
+                               'VIT'))
+```
